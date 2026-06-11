@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Any
 
 from mnemo.backends.vector_base import EMBEDDING_METADATA_KEY, VectorBackend
+from mnemo.decay import decay_weight_for_item
 from mnemo.embeddings.base import Embedder
 from mnemo.embeddings.similarity import cosine_similarity
 from mnemo.models import MemoryItem, MemoryTier
+from mnemo.policy import MemoryPolicy
 
 
 def rank_by_cosine(
@@ -24,6 +27,31 @@ def rank_by_cosine(
         if embedding is None:
             continue
         scored.append((cosine_similarity(query_vector, embedding), item))
+    scored.sort(key=lambda pair: pair[0], reverse=True)
+    return [item for _, item in scored[:top_k]]
+
+
+def rank_by_cosine_with_decay(
+    items: list[MemoryItem],
+    query_vector: list[float],
+    top_k: int,
+    policy: MemoryPolicy,
+    reference: datetime,
+    *,
+    tier: MemoryTier = MemoryTier.EPISODIC,
+    time_key: str = "event_time",
+) -> list[MemoryItem]:
+    """Rank by ``cosine × decay_weight`` (retrieval-time forgetting)."""
+    if top_k <= 0:
+        return []
+    scored: list[tuple[float, MemoryItem]] = []
+    for item in items:
+        embedding = item.metadata.get(EMBEDDING_METADATA_KEY)
+        if embedding is None:
+            continue
+        cosine = cosine_similarity(query_vector, embedding)
+        weight = decay_weight_for_item(item, policy, tier, reference, time_key=time_key)
+        scored.append((cosine * weight, item))
     scored.sort(key=lambda pair: pair[0], reverse=True)
     return [item for _, item in scored[:top_k]]
 

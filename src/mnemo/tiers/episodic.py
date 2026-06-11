@@ -6,10 +6,13 @@ from datetime import datetime, timezone
 from typing import Any
 
 from mnemo.backends.base import MemoryBackend
-from mnemo.backends.vector_base import EMBEDDING_METADATA_KEY
+from mnemo.backends.vector_base import EMBEDDING_METADATA_KEY, VectorBackend
+from mnemo.decay import decay_weight_for_item
+from mnemo.models import DecayMode
 from mnemo.embeddings.base import Embedder
-from mnemo.embeddings.retrieval import semantic_search
+from mnemo.embeddings.retrieval import rank_by_cosine, rank_by_cosine_with_decay
 from mnemo.models import MemoryItem, MemoryTier
+from mnemo.policy import MemoryPolicy
 
 
 def _utc_now() -> datetime:
@@ -66,11 +69,27 @@ class EpisodicMemory:
         self,
         top_k: int,
         filters: dict[str, Any] | None = None,
+        *,
+        policy: MemoryPolicy | None = None,
+        reference_time: datetime | None = None,
     ) -> list[MemoryItem]:
-        """Active events only, newest ``event_time`` first."""
+        """Active events only, ranked by ``event_time`` (optionally decay-weighted)."""
         active = self._active_items(filters)
-        ranked = sorted(active, key=lambda i: i.metadata["event_time"], reverse=True)
-        return ranked[:top_k]
+        cfg = policy or MemoryPolicy()
+        ref = reference_time or _utc_now()
+        if cfg.episodic_decay_mode == DecayMode.NONE:
+            ranked = sorted(active, key=lambda i: i.metadata["event_time"], reverse=True)
+            return ranked[:top_k]
+        scored = [
+            (
+                decay_weight_for_item(item, cfg, MemoryTier.EPISODIC, ref, time_key="event_time"),
+                item.metadata["event_time"],
+                item,
+            )
+            for item in active
+        ]
+        scored.sort(key=lambda row: (row[0], row[1]), reverse=True)
+        return [item for _, _, item in scored[:top_k]]
 
     def recall_semantic(
         self,
@@ -78,18 +97,39 @@ class EpisodicMemory:
         embedder: Embedder,
         top_k: int,
         filters: dict[str, Any] | None = None,
+        *,
+        policy: MemoryPolicy | None = None,
+        reference_time: datetime | None = None,
     ) -> list[MemoryItem]:
         """Active events ranked by cosine similarity to ``query`` embedding."""
-        hits = semantic_search(
-            self._backend,
-            MemoryTier.EPISODIC,
-            query,
-            embedder,
-            top_k=max(top_k * 3, top_k),
-            filters=filters,
-        )
+        cfg = policy or MemoryPolicy()
+        ref = reference_time or _utc_now()
+        overfetch = max(top_k * 3, top_k)
+        query_vector = embedder.embed(query)
+
+        if isinstance(self._backend, VectorBackend):
+            hits = self._backend.search_by_vector(
+                MemoryTier.EPISODIC,
+                query_vector,
+                overfetch,
+                filters,
+            )
+        else:
+            items = self._backend.list(MemoryTier.EPISODIC, filters or {})
+            hits = rank_by_cosine(items, query_vector, overfetch)
+
         active = [item for item in hits if item.metadata.get("txn_to") is None]
-        return active[:top_k]
+        if cfg.episodic_decay_mode == DecayMode.NONE:
+            return active[:top_k]
+        return rank_by_cosine_with_decay(
+            active,
+            query_vector,
+            top_k,
+            cfg,
+            ref,
+            tier=MemoryTier.EPISODIC,
+            time_key="event_time",
+        )
 
     def get_timeline(
         self,

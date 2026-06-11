@@ -6,6 +6,8 @@ from datetime import datetime, timezone
 from typing import Any
 
 from mnemo.backends.base import MemoryBackend
+from mnemo.decay import decay_weight_for_item
+from mnemo.models import DecayMode
 from mnemo.embeddings.base import Embedder
 from mnemo.extraction.l0_extractor import extract_l0
 from mnemo.extraction.l1_extractor import extract_l1
@@ -167,8 +169,10 @@ class SemanticMemory:
         *,
         entity: str | None = None,
         predicate: str | None = None,
+        policy: MemoryPolicy | None = None,
+        reference_time: datetime | None = None,
     ) -> list[MemoryItem]:
-        """Active facts, optionally filtered by entity and/or predicate."""
+        """Active facts, optionally filtered and decay-ranked at recall."""
         filters: dict[str, Any] = {}
         if entity is not None:
             filters["entity"] = entity
@@ -179,7 +183,23 @@ class SemanticMemory:
             active = [i for i in active if i.metadata.get("entity") == entity]
         if predicate is not None:
             active = [i for i in active if i.metadata.get("predicate") == predicate]
-        return sorted(active, key=lambda i: i.metadata["txn_from"])
+
+        cfg = policy or MemoryPolicy()
+        ref = reference_time or _utc_now()
+        if cfg.semantic_decay_mode == DecayMode.NONE:
+            return sorted(active, key=lambda i: i.metadata["txn_from"])
+
+        scored = [
+            (
+                decay_weight_for_item(item, cfg, MemoryTier.SEMANTIC, ref, time_key="valid_from")
+                * float(item.metadata.get("confidence", 1.0)),
+                item.metadata["txn_from"],
+                item,
+            )
+            for item in active
+        ]
+        scored.sort(key=lambda row: (row[0], row[1]), reverse=True)
+        return [item for _, _, item in scored]
 
     def get_history(self, entity: str, predicate: str) -> list[MemoryItem]:
         """All rows for a logical fact, oldest transaction first (audit trail)."""

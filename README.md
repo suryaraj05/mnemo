@@ -1,6 +1,6 @@
 # Mnemo
 
-**Status: Phase 8 — L1 template embedding match + cost-aware write path.**
+**Status: Phase 9 — Temporal decay (exponential vs power-law) at retrieval.**
 
 Mnemo is a production-grade, backend-agnostic, cost-aware memory library for LLM agents.
 It is framework-agnostic by design: the core has **no** LangChain, LangGraph, or other
@@ -37,6 +37,18 @@ from mnemo import SQLiteBackend, EpisodicMemory
 em = EpisodicMemory(SQLiteBackend("mnemo.db"))
 em.record("Survives restart", source="user")
 ```
+
+## Temporal decay (Phase 9)
+
+```python
+from mnemo import MemoryPolicy, DecayMode, EpisodicMemory, InMemoryBackend
+
+policy = MemoryPolicy(episodic_decay_mode=DecayMode.EXPONENTIAL, decay_half_life_days=30)
+em = EpisodicMemory(InMemoryBackend())
+# recall_semantic(..., policy=policy) ranks by cosine × decay(event_time age)
+```
+
+Benchmark curves: `python scripts/decay_benchmark.py`
 
 ## L1 template match (Phase 8)
 
@@ -129,5 +141,6 @@ await mnemo.forget(entity, scope)    # -> None
 - `docs/ADR-006-vector-retrieval.md`
 - `docs/ADR-007-semantic-tier-l0.md`
 - `docs/ADR-008-l1-template-matching.md`
+- `docs/ADR-009-temporal-decay.md`
 - `docs/metadata-schema.md`
 - `notes/BUILD_LOG.md`

@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from mnemo.models import DecayMode
+
 
 class MemoryPolicy(BaseModel):
     """Tunable policy for Mnemo's write, recall, and eviction behavior.
@@ -14,7 +16,6 @@ class MemoryPolicy(BaseModel):
 
         # kl_threshold: float
         # tier_weights: dict[str, float]
-        # decay_half_life_days: float
         # procedural_min_successes: int
     """
 
@@ -35,6 +36,29 @@ class MemoryPolicy(BaseModel):
         default=0.00001,
         ge=0.0,
         description="Marginal USD cost per query embed call on the L1 write path.",
+    )
+    episodic_decay_mode: DecayMode = Field(
+        default=DecayMode.NONE,
+        description="Decay curve for episodic recall (default off for compatibility).",
+    )
+    semantic_decay_mode: DecayMode = Field(
+        default=DecayMode.NONE,
+        description="Decay curve for semantic fact ranking at recall.",
+    )
+    decay_half_life_days: float = Field(
+        default=30.0,
+        gt=0.0,
+        description="Half-life for exponential decay (days).",
+    )
+    decay_tau_days: float = Field(
+        default=7.0,
+        gt=0.0,
+        description="Scale τ for power-law decay (days).",
+    )
+    decay_alpha: float = Field(
+        default=1.0,
+        gt=0.0,
+        description="Exponent α for power-law decay.",
     )
 
 

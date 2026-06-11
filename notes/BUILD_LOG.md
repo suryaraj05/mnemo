@@ -121,6 +121,15 @@ SQLiteBackend (Phase 4), MemoryPolicy changes.
 - `SemanticMemory.ingest_l1` with `WriteResult.cost_usd`
 - ADR-008, 7 new tests (106 total)
 
-### Notes for next session (Phase 9)
-- Temporal decay: exponential vs power-law at retrieval
-- Synthetic benchmark plot script
+## Phase 9 - Temporal decay (2026-06-11)
+
+### Shipped
+- `weight_exponential`, `weight_power_law`, `decay_weight_for_item`
+- Policy: `episodic_decay_mode`, `semantic_decay_mode`, half-life / τ / α
+- Episodic `recall_semantic` + `recall_recent` decay-aware ranking
+- Semantic `recall_facts` decay × confidence ranking
+- `scripts/decay_benchmark.py`, ADR-009, 8 new tests (114 total)
+
+### Notes for next session (Phase 10)
+- KL divergence importance gate for L2 LLM extraction
+- `importance(utterance) = KL(p_new || p_existing)`

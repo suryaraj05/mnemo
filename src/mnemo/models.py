@@ -30,6 +30,14 @@ class MemoryTier(str, Enum):
     PROCEDURAL = "procedural"
 
 
+class DecayMode(str, Enum):
+    """Retrieval-time decay curve selection (Phase 9)."""
+
+    NONE = "none"
+    EXPONENTIAL = "exponential"
+    POWER_LAW = "power_law"
+
+
 class ForgetScope(str, Enum):
     """Granularity of a forget/delete operation.
 

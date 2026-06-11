@@ -66,3 +66,27 @@ SQLiteBackend (Phase 4), MemoryPolicy changes.
   reference backend; revisit if used beyond tests/notebooks.
 - Thread safety is explicitly out of scope for InMemoryBackend - decide where
   concurrency guarantees live (backend vs orchestration) before SQLite (Phase 4).
+
+## Phase 2 - WorkingMemory controller (2026-06-11)
+
+### Shipped
+- `MemoryPolicy.max_working_size` (default 10, ge=1)
+- `src/mnemo/tiers/working.py`: min-heap eviction, Policy B, lazy heap staleness
+- ADR-003, 13 tests in `tests/test_working_memory.py`
+
+## Phase 3 - EpisodicMemory controller (2026-06-11)
+
+### Shipped
+- `src/mnemo/tiers/episodic.py`: record, recall_recent, get_timeline, retire
+- ADR-004, 6 tests in `tests/test_episodic_memory.py`
+
+## Phase 4 - SQLiteBackend (2026-06-11)
+
+### Shipped
+- `src/mnemo/backends/sqlite.py`: JSON value/metadata, INSERT OR REPLACE
+- Episodic persistence integration test
+- 5 tests in `tests/test_sqlite_backend.py`
+
+### Notes for next session (Phase 5)
+- Embedding layer: provider-agnostic, cosine similarity, local default
+- Pgvector backend (Phase 6)

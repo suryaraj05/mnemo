@@ -87,12 +87,19 @@ class TestResultTypes:
 
 
 class TestPolicy:
-    def test_policy_constructs_empty(self) -> None:
-        assert isinstance(MemoryPolicy(), MemoryPolicy)
+    def test_policy_default_max_working_size(self) -> None:
+        assert MemoryPolicy().max_working_size == 10
+
+    def test_policy_accepts_max_working_size(self) -> None:
+        assert MemoryPolicy(max_working_size=5).max_working_size == 5
+
+    def test_policy_rejects_invalid_max_working_size(self) -> None:
+        with pytest.raises(ValidationError):
+            MemoryPolicy(max_working_size=0)
 
     def test_policy_rejects_unknown_fields(self) -> None:
         with pytest.raises(ValidationError):
-            MemoryPolicy(max_working_size=10)  # type: ignore[call-arg]
+            MemoryPolicy(kl_threshold=0.5)  # type: ignore[call-arg]
 
     def test_load_policy_not_implemented(self) -> None:
         with pytest.raises(NotImplementedError):

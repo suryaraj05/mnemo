@@ -1,6 +1,6 @@
 # Mnemo
 
-**Status: Phase 1 — InMemoryBackend (reference backend with pinned semantics).**
+**Status: Phase 4 — Working + Episodic tiers, InMemory + SQLite backends.**
 
 Mnemo is a production-grade, backend-agnostic, cost-aware memory library for LLM agents.
 It is framework-agnostic by design: the core has **no** LangChain, LangGraph, or other
@@ -8,27 +8,34 @@ agent-framework imports.
 
 ## The four tiers
 
-| Tier | Purpose | Key behavior |
-|------|---------|--------------|
-| `working` | Bounded in-context memory | Importance-weighted FIFO eviction via min-heap on `(importance, arrival_time, key)` |
-| `episodic` | Verbatim, timestamped events | Bi-temporal metadata; never summarized at write time |
-| `semantic` | Extracted facts | Validity windows + confidence scoring |
-| `procedural` | Behavioral patterns | Promoted only after N confirmed successes |
+| Tier | Purpose | Status |
+|------|---------|--------|
+| `working` | Bounded in-context memory | **Implemented** (`WorkingMemory`) |
+| `episodic` | Verbatim, timestamped events | **Implemented** (`EpisodicMemory`) |
+| `semantic` | Extracted facts | Planned |
+| `procedural` | Behavioral patterns | Planned |
 
-## Cost-aware write path (later phases)
-
-Writes escalate through a cost ladder and stop at the cheapest sufficient level:
-
-1. **Level 0** - regex extraction (free)
-2. **Level 1** - template embedding match (cheap)
-3. **Level 2** - LLM extraction, gated by KL-divergence threshold (expensive)
-
-## Public API (end state, not yet implemented)
+## Quick example
 
 ```python
-await mnemo.remember(turn, policy)   # -> WriteResult
-await mnemo.recall(query, policy)    # -> list[MemoryItem]
-await mnemo.forget(entity, scope)    # -> None
+from mnemo import InMemoryBackend, MemoryPolicy, WorkingMemory, EpisodicMemory
+
+backend = InMemoryBackend()
+wm = WorkingMemory.from_policy(backend, MemoryPolicy().max_working_size)
+wm.add("turn_1", "User said hello", importance=0.9)
+
+em = EpisodicMemory(backend)
+em.record("I moved to Pune last month.", source="user", scope="my-agent")
+recent = em.recall_recent(top_k=5)
+```
+
+### SQLite persistence
+
+```python
+from mnemo import SQLiteBackend, EpisodicMemory
+
+em = EpisodicMemory(SQLiteBackend("mnemo.db"))
+em.record("Survives restart", source="user")
 ```
 
 ## Install
@@ -38,29 +45,19 @@ pip install -e ".[dev]"
 pytest -v
 ```
 
-## Quick example
+## Public API (end state)
 
 ```python
-from mnemo import InMemoryBackend, MemoryTier
-
-backend = InMemoryBackend()
-backend.write(MemoryTier.EPISODIC, "evt_1", "hello", {"source": "user"})
-
-items = backend.read(MemoryTier.EPISODIC, "hello", top_k=5)
-user_events = backend.list(MemoryTier.EPISODIC, {"source": "user"})
-backend.delete(MemoryTier.EPISODIC, "evt_1")  # idempotent
+await mnemo.remember(turn, policy)   # -> WriteResult
+await mnemo.recall(query, policy)    # -> list[MemoryItem]
+await mnemo.forget(entity, scope)    # -> None
 ```
 
-## What exists today (Phases 0–1)
+## Docs
 
-- Core models: `MemoryTier`, `ForgetScope`, `MemoryItem`
-- Result types with cost/audit fields: `WriteResult`, `ReadResult`, `DeleteResult`
-- `MemoryPolicy` stub and `load_policy` skeleton
-- `MemoryBackend` ABC (`write`, `read`, `delete`, `list`)
-- `InMemoryBackend` — reference implementation; semantics pinned in
-  `docs/ADR-002-inmemory-backend-semantics.md`
-- Metadata conventions: `docs/metadata-schema.md`
-- Contract tests
-
-See `docs/ADR-001-four-tier-architecture.md` for the architecture rationale and
-`notes/BUILD_LOG.md` for the phase-by-phase build log.
+- `docs/ADR-001-four-tier-architecture.md`
+- `docs/ADR-002-inmemory-backend-semantics.md`
+- `docs/ADR-003-working-memory-eviction.md`
+- `docs/ADR-004-episodic-bi-temporal.md`
+- `docs/metadata-schema.md`
+- `notes/BUILD_LOG.md`

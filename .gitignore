@@ -10,3 +10,5 @@ dist/
 *.egg-info/
 data/*.json
 longmemeval_s_cleaned.json
+website/
+*.pdf

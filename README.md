@@ -2,6 +2,13 @@
 
 **Status: v0.1.0 — Complete 4-tier library with cost-aware write path and public API.**
 
+**Website:** [mnemo.one](https://mnemo.one) · **Docs site repo:** [suryaraj05/mnemo-website](https://github.com/suryaraj05/mnemo-website)
+
+```bash
+git clone https://github.com/suryaraj05/mnemo.git
+cd mnemo && pip install -e ".[dev]"
+```
+
 Mnemo is a production-grade, backend-agnostic, cost-aware memory library for LLM agents.
 It is framework-agnostic by design: the core has **no** LangChain, LangGraph, or other
 agent-framework imports.

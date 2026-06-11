@@ -112,6 +112,15 @@ SQLiteBackend (Phase 4), MemoryPolicy changes.
 - `extract_l0`: email, ISO date, name, location patterns (write_level=0)
 - ADR-007, 12 new tests (99 total)
 
-### Notes for next session (Phase 8)
-- L1 template library + embedding match threshold
-- WriteResult cost accounting for L1 path
+## Phase 8 - L1 template matching (2026-06-11)
+
+### Shipped
+- `TemplateLibrary` + bundled `l1_templates.json` (employer, hobby slots)
+- `extract_l1`: cosine match + value regex, `L1ExtractionResult` cost telemetry
+- `MemoryPolicy.l1_cosine_threshold` (0.85) + `l1_embed_cost_usd`
+- `SemanticMemory.ingest_l1` with `WriteResult.cost_usd`
+- ADR-008, 7 new tests (106 total)
+
+### Notes for next session (Phase 9)
+- Temporal decay: exponential vs power-law at retrieval
+- Synthetic benchmark plot script

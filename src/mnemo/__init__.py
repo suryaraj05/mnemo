@@ -1,6 +1,6 @@
 """Mnemo: a 4-tier, backend-agnostic, cost-aware memory library for LLM agents.
 
-Phases 0–7: backends, tiers, embeddings, L0 extraction.
+Phases 0–8: backends, tiers, embeddings, L0/L1 extraction.
 """
 
 from mnemo.backends import (
@@ -13,7 +13,15 @@ from mnemo.backends import (
 from mnemo.embeddings import Embedder, HashEmbedder, cosine_similarity
 from mnemo.models import ForgetScope, MemoryItem, MemoryTier
 from mnemo.policy import MemoryPolicy, load_policy
-from mnemo.extraction import ExtractedFact, extract_l0
+from mnemo.extraction import (
+    ExtractedFact,
+    FactTemplate,
+    L1ExtractionResult,
+    TemplateLibrary,
+    extract_l0,
+    extract_l1,
+    load_template_library,
+)
 from mnemo.tiers import EpisodicMemory, SemanticMemory, WorkingMemory
 from mnemo.types import DeleteResult, ReadResult, WriteResult
 
@@ -33,7 +41,12 @@ __all__ = [
     "EpisodicMemory",
     "SemanticMemory",
     "ExtractedFact",
+    "FactTemplate",
+    "L1ExtractionResult",
+    "TemplateLibrary",
     "extract_l0",
+    "extract_l1",
+    "load_template_library",
     "ForgetScope",
     "MemoryItem",
     "MemoryTier",

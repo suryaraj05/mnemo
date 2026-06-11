@@ -6,9 +6,13 @@ from datetime import datetime, timezone
 from typing import Any
 
 from mnemo.backends.base import MemoryBackend
+from mnemo.embeddings.base import Embedder
 from mnemo.extraction.l0_extractor import extract_l0
+from mnemo.extraction.l1_extractor import extract_l1
 from mnemo.extraction.models import ExtractedFact
+from mnemo.extraction.templates import TemplateLibrary, load_template_library
 from mnemo.models import MemoryItem, MemoryTier
+from mnemo.policy import MemoryPolicy
 from mnemo.types import WriteResult
 
 
@@ -57,6 +61,7 @@ class SemanticMemory:
         confidence: float = 1.0,
         valid_from: datetime | None = None,
         write_level: int | None = None,
+        cost_usd: float = 0.0,
     ) -> WriteResult:
         """Upsert one fact; closes the prior active row on value change."""
         when = _utc_now()
@@ -70,7 +75,7 @@ class SemanticMemory:
                     key=existing.key,
                     created=False,
                     write_level=write_level,
-                    cost_usd=0.0,
+                    cost_usd=cost_usd,
                     timestamp=when,
                 )
             self._close_row(existing, when)
@@ -97,7 +102,7 @@ class SemanticMemory:
             key=key,
             created=created,
             write_level=write_level,
-            cost_usd=0.0,
+            cost_usd=cost_usd,
             timestamp=when,
         )
 
@@ -108,7 +113,13 @@ class SemanticMemory:
             results.append(self._store_extracted(fact, source="l0:regex"))
         return results
 
-    def _store_extracted(self, fact: ExtractedFact, source: str) -> WriteResult:
+    def _store_extracted(
+        self,
+        fact: ExtractedFact,
+        source: str,
+        *,
+        cost_usd: float = 0.0,
+    ) -> WriteResult:
         return self.store_fact(
             fact.entity,
             fact.predicate,
@@ -117,7 +128,35 @@ class SemanticMemory:
             confidence=fact.confidence,
             valid_from=fact.valid_from,
             write_level=fact.write_level,
+            cost_usd=cost_usd,
         )
+
+    def ingest_l1(
+        self,
+        text: str,
+        embedder: Embedder,
+        library: TemplateLibrary | None = None,
+        *,
+        policy: MemoryPolicy | None = None,
+        default_entity: str = "user",
+    ) -> list[WriteResult]:
+        """Run L1 template embedding match on ``text`` and store matched facts."""
+        lib = library or load_template_library()
+        cfg = policy or MemoryPolicy()
+        batch = extract_l1(
+            text,
+            embedder,
+            lib,
+            policy=cfg,
+            default_entity=default_entity,
+        )
+        if not batch.facts:
+            return []
+        share = batch.cost_usd / len(batch.facts)
+        return [
+            self._store_extracted(fact, "l1:template", cost_usd=share)
+            for fact in batch.facts
+        ]
 
     def get_fact(self, entity: str, predicate: str) -> MemoryItem | None:
         """Return the active fact for ``entity`` + ``predicate``, if any."""

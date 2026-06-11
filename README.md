@@ -1,6 +1,6 @@
 # Mnemo
 
-**Status: Phase 7 — Semantic tier + L0 regex extraction.**
+**Status: Phase 8 — L1 template embedding match + cost-aware write path.**
 
 Mnemo is a production-grade, backend-agnostic, cost-aware memory library for LLM agents.
 It is framework-agnostic by design: the core has **no** LangChain, LangGraph, or other
@@ -36,6 +36,17 @@ from mnemo import SQLiteBackend, EpisodicMemory
 
 em = EpisodicMemory(SQLiteBackend("mnemo.db"))
 em.record("Survives restart", source="user")
+```
+
+## L1 template match (Phase 8)
+
+```python
+from mnemo import SemanticMemory, InMemoryBackend, load_template_library, HashEmbedder
+from mnemo import MemoryPolicy
+
+sm = SemanticMemory(InMemoryBackend())
+policy = MemoryPolicy(l1_cosine_threshold=0.85, l1_embed_cost_usd=0.00001)
+sm.ingest_l1("I started at Stripe yesterday", HashEmbedder(), load_template_library(), policy=policy)
 ```
 
 ## Semantic facts + L0 extraction (Phase 7)
@@ -117,5 +128,6 @@ await mnemo.forget(entity, scope)    # -> None
 - `docs/ADR-005-embedding-layer.md`
 - `docs/ADR-006-vector-retrieval.md`
 - `docs/ADR-007-semantic-tier-l0.md`
+- `docs/ADR-008-l1-template-matching.md`
 - `docs/metadata-schema.md`
 - `notes/BUILD_LOG.md`

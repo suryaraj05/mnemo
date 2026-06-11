@@ -1,0 +1,25 @@
+{
+  "templates": [
+    {
+      "entity": "user",
+      "predicate": "employer",
+      "utterances": [
+        "I work at Acme Corp",
+        "My employer is Google",
+        "I joined Microsoft last year",
+        "I started at Amazon yesterday"
+      ],
+      "value_pattern": "(?i)(?:work at|employer is|joined|started at)\\s+([A-Za-z][A-Za-z0-9\\s&.-]+?)(?:\\s+last|\\s+yesterday|\\s+this|\\.|:|,|$)"
+    },
+    {
+      "entity": "user",
+      "predicate": "hobby",
+      "utterances": [
+        "I enjoy playing guitar",
+        "My hobby is painting",
+        "I love hiking on weekends"
+      ],
+      "value_pattern": "(?i)(?:enjoy|hobby is|love)\\s+(.+?)(?:\\s+on\\s+weekends|\\.|:|,|$)"
+    }
+  ]
+}

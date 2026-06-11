@@ -13,7 +13,6 @@ class MemoryPolicy(BaseModel):
     .. code-block:: python
 
         # kl_threshold: float
-        # l1_cosine_threshold: float
         # tier_weights: dict[str, float]
         # decay_half_life_days: float
         # procedural_min_successes: int
@@ -25,6 +24,17 @@ class MemoryPolicy(BaseModel):
         default=10,
         ge=1,
         description="Maximum items in WORKING tier before eviction (Phase 2).",
+    )
+    l1_cosine_threshold: float = Field(
+        default=0.85,
+        ge=-1.0,
+        le=1.0,
+        description="Minimum cosine similarity for L1 template match (Phase 8).",
+    )
+    l1_embed_cost_usd: float = Field(
+        default=0.00001,
+        ge=0.0,
+        description="Marginal USD cost per query embed call on the L1 write path.",
     )
 
 

@@ -14,7 +14,7 @@
 - `backends/base.py`: `MemoryBackend` ABC - exact frozen signatures for
   `write`, `read`, `delete`, `list`
 - ADR-001 (why 4 tiers, backend abstraction, cost ladder), README, CI test stage
-- 18 contract tests in `tests/test_models.py`
+- 25 contract test cases (incl. parametrized) in `tests/test_models.py`
 
 ### Deliberately NOT built (per scope)
 InMemoryBackend, SQLiteBackend, tiers/, embeddings, remember/recall/forget,

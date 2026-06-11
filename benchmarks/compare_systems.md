@@ -20,7 +20,7 @@
 | — | **Mnemo raw (MiniLM, n=5)** | **100%** | **No** | **No** | **Yes** | **Free** |
 | — | **Mnemo raw (MiniLM, n=25 dev)** | **100%** | No | No | Yes | Free |
 | — | Mnemo raw (HashEmbedder, n=10) | 10% | No | No | Yes | CI only — not semantic |
-| — | Mnemo raw (MiniLM, n=500) | *pending* | No | No | Yes | ~25h CPU est. |
+| 6 | **Mnemo raw (MiniLM, 500q)** | **94.4%** | No | No | Yes | Free |
 
 Sources: [MemPalace BENCHMARKS.md](https://github.com/MemPalace/mempalace/blob/main/benchmarks/BENCHMARKS.md), LongMemEval paper.  
 Mnemo rows: `benchmarks/results/*.jsonl` on this repo.

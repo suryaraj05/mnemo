@@ -96,7 +96,7 @@ Per-question audit trail: `benchmarks/results/*.jsonl`
 | dev | 5 | raw | MiniLM-L6-v2 | **100%** | 34.2 s | 72 ms | `mnemo_raw_minilm_n5.jsonl` |
 | dev | 10 | raw | HashEmbedder | 10% | 72 ms | 26 ms | `mnemo_raw_hash_n10.jsonl` |
 | dev | 25 | raw | MiniLM-L6-v2 | **100%** | 11.5 s | 47 ms | `mnemo_raw_minilm_n25.jsonl` |
-| full | 500 | raw | MiniLM-L6-v2 | *pending* | ~3 min/q est. | — | — |
+| **full** | **500** | **raw** | **MiniLM-L6-v2** | **94.4%** | **12.5 s** | **49 ms** | `mnemo_raw_minilm_n500.jsonl` |
 
 HashEmbedder is for **CI smoke only** — not semantic search. Use `--embedder minilm` for MemPalace-comparable runs.
 
@@ -104,6 +104,7 @@ HashEmbedder is for **CI smoke only** — not semantic search. Use `--embedder m
 
 ## Honest release checklist
 
+- [x] Full 500q raw MiniLM run committed (`mnemo_raw_minilm_n500.jsonl`)
 - [ ] Report dev (50q) vs hold-out (450q) split — do not tune on full 500
 - [ ] Commit result JSONL with per-question audit trail
 - [ ] Document embedder model (`all-MiniLM-L6-v2` vs MemPalace Chroma default)

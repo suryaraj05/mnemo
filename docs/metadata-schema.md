@@ -11,6 +11,12 @@ validate or depend on them; enforcement, if any, arrives with the tier controlle
 | `event_time` | EPISODIC | ISO 8601 datetime — when it happened in the world |
 | `txn_from` | EPISODIC / SEMANTIC | ISO 8601 datetime — when Mnemo stored the record |
 | `txn_to` | EPISODIC / SEMANTIC | ISO 8601 datetime or `null`; `null` = currently active |
+| `entity` | SEMANTIC | Subject of the fact (e.g. `"user"`, `"project"`) |
+| `predicate` | SEMANTIC | Attribute slot (e.g. `"name"`, `"email"`, `"location"`) |
+| `valid_from` | SEMANTIC | ISO 8601 — when the fact became true in the world |
+| `valid_to` | SEMANTIC | ISO 8601 or `null`; closed on correction/supersede |
+| `confidence` | SEMANTIC | `float` in `[0, 1]` from extractor or user assertion |
+| `write_level` | SEMANTIC | `0` = regex, `1` = template, `2` = LLM |
 | `source` | all tiers | `"user"` \| `"agent"` \| extractor id (e.g. `"l0:regex"`) |
 | `scope` | EPISODIC | project/session namespace string |
 

@@ -104,6 +104,14 @@ SQLiteBackend (Phase 4), MemoryPolicy changes.
 - `EpisodicMemory.record(embedder=)` + `recall_semantic()`
 - ADR-006, 6 new tests (87 total; pgvector integration skipped in CI)
 
-### Notes for next session (Phase 7)
-- Semantic memory tier + L0 regex extraction
-- Conflict resolution + bi-temporal facts
+## Phase 7 - Semantic tier + L0 regex (2026-06-11)
+
+### Shipped
+- `SemanticMemory`: store_fact, get_fact, recall_facts, get_history, ingest_l0
+- Bi-temporal conflict: Alex → Alexander closes txn/valid on old row
+- `extract_l0`: email, ISO date, name, location patterns (write_level=0)
+- ADR-007, 12 new tests (99 total)
+
+### Notes for next session (Phase 8)
+- L1 template library + embedding match threshold
+- WriteResult cost accounting for L1 path

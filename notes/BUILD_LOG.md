@@ -95,6 +95,15 @@ SQLiteBackend (Phase 4), MemoryPolicy changes.
 - `SentenceTransformerEmbedder` optional via `pip install "mnemo[local-embeddings]"`
 - ADR-005, 13 tests in `tests/test_embeddings.py` (81 total)
 
-### Notes for next session (Phase 6)
-- Pgvector backend + vector column on episodic/semantic rows
-- Semantic read path using cosine over stored embeddings
+## Phase 6 - Vector retrieval (2026-06-11)
+
+### Shipped
+- `VectorBackend` ABC + `search_by_vector`
+- `ExactVectorBackend` brute-force cosine (CI)
+- `PgvectorBackend` HNSW + cosine `<=>` (optional DSN)
+- `EpisodicMemory.record(embedder=)` + `recall_semantic()`
+- ADR-006, 6 new tests (87 total; pgvector integration skipped in CI)
+
+### Notes for next session (Phase 7)
+- Semantic memory tier + L0 regex extraction
+- Conflict resolution + bi-temporal facts

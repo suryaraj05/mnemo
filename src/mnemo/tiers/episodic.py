@@ -6,6 +6,9 @@ from datetime import datetime, timezone
 from typing import Any
 
 from mnemo.backends.base import MemoryBackend
+from mnemo.backends.vector_base import EMBEDDING_METADATA_KEY
+from mnemo.embeddings.base import Embedder
+from mnemo.embeddings.retrieval import semantic_search
 from mnemo.models import MemoryItem, MemoryTier
 
 
@@ -31,6 +34,7 @@ class EpisodicMemory:
         event_time: datetime | None = None,
         scope: str | None = None,
         metadata: dict[str, Any] | None = None,
+        embedder: Embedder | None = None,
     ) -> str:
         """Store one raw event verbatim. Returns the generated event key."""
         when = event_time or _utc_now()
@@ -44,6 +48,8 @@ class EpisodicMemory:
             meta["scope"] = scope
         if metadata:
             meta.update(metadata)
+        if embedder is not None:
+            meta[EMBEDDING_METADATA_KEY] = embedder.embed(event_text)
 
         key = self._next_key()
         self._backend.write(MemoryTier.EPISODIC, key, event_text, meta)
@@ -65,6 +71,25 @@ class EpisodicMemory:
         active = self._active_items(filters)
         ranked = sorted(active, key=lambda i: i.metadata["event_time"], reverse=True)
         return ranked[:top_k]
+
+    def recall_semantic(
+        self,
+        query: str,
+        embedder: Embedder,
+        top_k: int,
+        filters: dict[str, Any] | None = None,
+    ) -> list[MemoryItem]:
+        """Active events ranked by cosine similarity to ``query`` embedding."""
+        hits = semantic_search(
+            self._backend,
+            MemoryTier.EPISODIC,
+            query,
+            embedder,
+            top_k=max(top_k * 3, top_k),
+            filters=filters,
+        )
+        active = [item for item in hits if item.metadata.get("txn_to") is None]
+        return active[:top_k]
 
     def get_timeline(
         self,

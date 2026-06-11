@@ -1,6 +1,6 @@
 # Mnemo
 
-**Status: Phase 5 — Embedding layer + backends + Working + Episodic tiers.**
+**Status: Phase 6 — Vector retrieval (ExactVector + Pgvector) + embeddings + tiers.**
 
 Mnemo is a production-grade, backend-agnostic, cost-aware memory library for LLM agents.
 It is framework-agnostic by design: the core has **no** LangChain, LangGraph, or other
@@ -36,6 +36,26 @@ from mnemo import SQLiteBackend, EpisodicMemory
 
 em = EpisodicMemory(SQLiteBackend("mnemo.db"))
 em.record("Survives restart", source="user")
+```
+
+## Semantic episodic recall (Phase 6)
+
+```python
+from mnemo import ExactVectorBackend, HashEmbedder, EpisodicMemory
+
+emb = HashEmbedder(dimension=384)
+backend = ExactVectorBackend()
+em = EpisodicMemory(backend)
+
+em.record("I moved to Pune last month.", source="user", embedder=emb)
+hits = em.recall_semantic("where did I live?", emb, top_k=3)
+```
+
+Production pgvector (requires Postgres + extension):
+
+```bash
+pip install -e ".[pgvector]"
+export MNEMO_PGVECTOR_DSN=postgresql://localhost:5432/mnemo
 ```
 
 ## Embeddings (Phase 5)
@@ -82,5 +102,6 @@ await mnemo.forget(entity, scope)    # -> None
 - `docs/ADR-003-working-memory-eviction.md`
 - `docs/ADR-004-episodic-bi-temporal.md`
 - `docs/ADR-005-embedding-layer.md`
+- `docs/ADR-006-vector-retrieval.md`
 - `docs/metadata-schema.md`
 - `notes/BUILD_LOG.md`

@@ -87,6 +87,14 @@ SQLiteBackend (Phase 4), MemoryPolicy changes.
 - Episodic persistence integration test
 - 5 tests in `tests/test_sqlite_backend.py`
 
-### Notes for next session (Phase 5)
-- Embedding layer: provider-agnostic, cosine similarity, local default
-- Pgvector backend (Phase 6)
+## Phase 5 - Embedding layer (2026-06-11)
+
+### Shipped
+- `Embedder` ABC, `cosine_similarity`, `normalize_l2`, zero-norm guard
+- `HashEmbedder` for CI (deterministic, no model download)
+- `SentenceTransformerEmbedder` optional via `pip install "mnemo[local-embeddings]"`
+- ADR-005, 13 tests in `tests/test_embeddings.py` (81 total)
+
+### Notes for next session (Phase 6)
+- Pgvector backend + vector column on episodic/semantic rows
+- Semantic read path using cosine over stored embeddings

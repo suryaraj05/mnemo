@@ -1,6 +1,6 @@
 # Mnemo
 
-**Status: Phase 4 — Working + Episodic tiers, InMemory + SQLite backends.**
+**Status: Phase 5 — Embedding layer + backends + Working + Episodic tiers.**
 
 Mnemo is a production-grade, backend-agnostic, cost-aware memory library for LLM agents.
 It is framework-agnostic by design: the core has **no** LangChain, LangGraph, or other
@@ -38,6 +38,28 @@ em = EpisodicMemory(SQLiteBackend("mnemo.db"))
 em.record("Survives restart", source="user")
 ```
 
+## Embeddings (Phase 5)
+
+```python
+from mnemo import HashEmbedder, cosine_similarity
+
+emb = HashEmbedder(dimension=384)  # CI-safe deterministic embedder
+a, b = emb.embed("hello"), emb.embed("hello world")
+score = cosine_similarity(a, b)
+```
+
+Local semantic model (optional):
+
+```bash
+pip install -e ".[dev,local-embeddings]"
+```
+
+```python
+from mnemo.embeddings.local import SentenceTransformerEmbedder
+
+emb = SentenceTransformerEmbedder("all-MiniLM-L6-v2")
+```
+
 ## Install
 
 ```bash
@@ -59,5 +81,6 @@ await mnemo.forget(entity, scope)    # -> None
 - `docs/ADR-002-inmemory-backend-semantics.md`
 - `docs/ADR-003-working-memory-eviction.md`
 - `docs/ADR-004-episodic-bi-temporal.md`
+- `docs/ADR-005-embedding-layer.md`
 - `docs/metadata-schema.md`
 - `notes/BUILD_LOG.md`

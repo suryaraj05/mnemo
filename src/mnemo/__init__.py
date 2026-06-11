@@ -1,9 +1,10 @@
 """Mnemo: a 4-tier, backend-agnostic, cost-aware memory library for LLM agents.
 
-Phases 0–4: contracts, InMemory + SQLite backends, Working + Episodic tiers.
+Phases 0–5: backends, tiers, embedding layer.
 """
 
 from mnemo.backends import InMemoryBackend, MemoryBackend, SQLiteBackend
+from mnemo.embeddings import Embedder, HashEmbedder, cosine_similarity
 from mnemo.models import ForgetScope, MemoryItem, MemoryTier
 from mnemo.policy import MemoryPolicy, load_policy
 from mnemo.tiers import EpisodicMemory, WorkingMemory
@@ -16,6 +17,9 @@ __all__ = [
     "InMemoryBackend",
     "SQLiteBackend",
     "MemoryBackend",
+    "Embedder",
+    "HashEmbedder",
+    "cosine_similarity",
     "WorkingMemory",
     "EpisodicMemory",
     "ForgetScope",

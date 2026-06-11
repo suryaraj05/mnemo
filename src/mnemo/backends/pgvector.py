@@ -40,6 +40,7 @@ class PgvectorBackend(VectorBackend):
 
         try:
             import psycopg
+            from pgvector import Vector
             from pgvector.psycopg import register_vector
         except ImportError as exc:
             raise ImportError(
@@ -47,8 +48,10 @@ class PgvectorBackend(VectorBackend):
             ) from exc
 
         self._psycopg = psycopg
+        self._Vector = Vector
         self._register_vector = register_vector
         self._conn = psycopg.connect(self._dsn)
+        self._ensure_extension()
         register_vector(self._conn)
         self._ensure_schema()
 
@@ -62,9 +65,13 @@ class PgvectorBackend(VectorBackend):
                 stacklevel=2,
             )
 
-    def _ensure_schema(self) -> None:
+    def _ensure_extension(self) -> None:
         with self._conn.cursor() as cur:
             cur.execute("CREATE EXTENSION IF NOT EXISTS vector")
+        self._conn.commit()
+
+    def _ensure_schema(self) -> None:
+        with self._conn.cursor() as cur:
             cur.execute(
                 f"""
                 CREATE TABLE IF NOT EXISTS {self._table} (
@@ -110,10 +117,15 @@ class PgvectorBackend(VectorBackend):
                     key,
                     json.dumps(value),
                     json.dumps(meta),
-                    embedding,
+                    self._as_vector(embedding),
                 ),
             )
         self._conn.commit()
+
+    def _as_vector(self, values: list[float] | None) -> Any:
+        if values is None:
+            return None
+        return self._Vector(values)
 
     def read(self, tier: MemoryTier, query: str, top_k: int) -> list[MemoryItem]:
         if top_k <= 0:
@@ -181,7 +193,7 @@ class PgvectorBackend(VectorBackend):
                     ORDER BY embedding <=> %s
                     LIMIT %s
                     """,
-                    (tier.value, list(keys), query_vector, top_k),
+                    (tier.value, list(keys), self._as_vector(query_vector), top_k),
                 )
             else:
                 cur.execute(
@@ -192,7 +204,7 @@ class PgvectorBackend(VectorBackend):
                     ORDER BY embedding <=> %s
                     LIMIT %s
                     """,
-                    (tier.value, query_vector, top_k),
+                    (tier.value, self._as_vector(query_vector), top_k),
                 )
             rows = cur.fetchall()
         return [self._row_to_item(k, v, m) for k, v, m in rows]
@@ -202,8 +214,17 @@ class PgvectorBackend(VectorBackend):
 
     @staticmethod
     def _row_to_item(key: str, value: Any, metadata: Any) -> MemoryItem:
-        if isinstance(value, str):
-            value = json.loads(value)
-        if isinstance(metadata, str):
-            metadata = json.loads(metadata)
+        value = PgvectorBackend._maybe_json(value)
+        metadata = PgvectorBackend._maybe_json(metadata)
+        if not isinstance(metadata, dict):
+            metadata = {}
         return MemoryItem(key=key, value=value, metadata=metadata)
+
+    @staticmethod
+    def _maybe_json(payload: Any) -> Any:
+        if isinstance(payload, str):
+            stripped = payload.strip()
+            if stripped.startswith("{") or stripped.startswith("["):
+                return json.loads(payload)
+            return payload
+        return payload

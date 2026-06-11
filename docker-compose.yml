@@ -1,0 +1,27 @@
+# Optional integration services for Redis + pgvector tests.
+# Uses port 5433 for Postgres to avoid conflicting with local PostgreSQL on 5432.
+
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: mnemo
+      POSTGRES_PASSWORD: mnemo
+      POSTGRES_DB: mnemo
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mnemo -d mnemo"]
+      interval: 5s
+      timeout: 3s
+      retries: 10

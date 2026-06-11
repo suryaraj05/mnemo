@@ -57,9 +57,13 @@ Bundled under `src/mnemo/policies/examples/`:
 ## Benchmarks
 
 ```bash
-python scripts/decay_benchmark.py
-python benchmarks/longmemeval_bench.py
+python scripts/decay_benchmark.py          # temporal decay curves
+python benchmarks/longmemeval_bench.py       # 2-turn smoke test
+.\scripts\download_longmemeval.ps1           # ~265MB dataset (Windows)
+python benchmarks/longmemeval_runner.py data/longmemeval_s_cleaned.json --limit 25 --mode raw --embedder minilm
 ```
+
+See **`benchmarks/BENCHMARKS.md`** and **`benchmarks/compare_systems.md`** for LongMemEval R@5 vs MemPalace, Mem0, Zep, and release honesty rules.
 
 ## Backends
 

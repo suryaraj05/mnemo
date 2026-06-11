@@ -1,6 +1,6 @@
 # Mnemo
 
-**Status: Phase 0 (foundation + contracts only). No runnable memory engine yet.**
+**Status: Phase 1 — InMemoryBackend (reference backend with pinned semantics).**
 
 Mnemo is a production-grade, backend-agnostic, cost-aware memory library for LLM agents.
 It is framework-agnostic by design: the core has **no** LangChain, LangGraph, or other
@@ -38,12 +38,28 @@ pip install -e ".[dev]"
 pytest -v
 ```
 
-## What exists today (Phase 0)
+## Quick example
+
+```python
+from mnemo import InMemoryBackend, MemoryTier
+
+backend = InMemoryBackend()
+backend.write(MemoryTier.EPISODIC, "evt_1", "hello", {"source": "user"})
+
+items = backend.read(MemoryTier.EPISODIC, "hello", top_k=5)
+user_events = backend.list(MemoryTier.EPISODIC, {"source": "user"})
+backend.delete(MemoryTier.EPISODIC, "evt_1")  # idempotent
+```
+
+## What exists today (Phases 0–1)
 
 - Core models: `MemoryTier`, `ForgetScope`, `MemoryItem`
 - Result types with cost/audit fields: `WriteResult`, `ReadResult`, `DeleteResult`
 - `MemoryPolicy` stub and `load_policy` skeleton
 - `MemoryBackend` ABC (`write`, `read`, `delete`, `list`)
+- `InMemoryBackend` — reference implementation; semantics pinned in
+  `docs/ADR-002-inmemory-backend-semantics.md`
+- Metadata conventions: `docs/metadata-schema.md`
 - Contract tests
 
 See `docs/ADR-001-four-tier-architecture.md` for the architecture rationale and

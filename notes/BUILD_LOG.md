@@ -32,5 +32,37 @@ benchmarks, MCP, CLI.
 - Should `delete` be strictly idempotent (current docstring says yes) or report misses?
   `DeleteResult.deleted_count` supports either - decide in Phase 1.
 - `metadata` conventions per tier (importance, event_time vs ingest_time) need a schema
-  note before EPISODIC lands.
+  note before EPISODIC lands. -> Resolved in Phase 1: docs/metadata-schema.md
 - YAML dependency choice for `load_policy` (PyYAML vs ruamel) deferred.
+
+## Phase 1 - InMemoryBackend + pinned semantics (2026-06-11)
+
+### Shipped
+- ADR-002: pinned backend semantics - case-sensitive substring read on key or
+  str(value), insertion-order results sliced to top_k (top_k <= 0 -> []), idempotent
+  silent-no-op delete, upsert write with metadata None -> {} and defensive copy
+  (overwrite keeps original insertion position), list with metadata.get(k) == v
+  exact-match filters (None == {} == all)
+- `src/mnemo/backends/memory.py`: `InMemoryBackend` (dict[MemoryTier, dict[str, MemoryItem]]),
+  exported from `mnemo.backends` and `mnemo`
+- `docs/metadata-schema.md`: reserved metadata key conventions per tier (not enforced)
+- 16 new contract tests in `tests/test_in_memory_backend.py` (41 total)
+- README: Phase 1 status + quick example
+
+### Deliberately NOT built (per scope)
+WorkingMemory eviction heap (Phase 2), EpisodicMemory controller (Phase 3),
+SQLiteBackend (Phase 4), MemoryPolicy changes.
+
+### Notes for next session (Phase 2)
+- WorkingMemory controller: bounded tier, min-heap on (importance, t, key);
+  add `max_working_size` to MemoryPolicy (un-comment from roadmap, validate > 0)
+- Heap is controller state layered over any MemoryBackend - do not push eviction
+  logic into backends
+- Use metadata keys `importance` and `t` per docs/metadata-schema.md
+
+### Open questions
+- Case-insensitive read: opt-in constructor flag later? ADR-002 default stays case-sensitive.
+- `str(value)` matching stringifies large payloads on every read - fine for the
+  reference backend; revisit if used beyond tests/notebooks.
+- Thread safety is explicitly out of scope for InMemoryBackend - decide where
+  concurrency guarantees live (backend vs orchestration) before SQLite (Phase 4).

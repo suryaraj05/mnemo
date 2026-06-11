@@ -46,7 +46,7 @@ benchmarks, MCP, CLI.
 - `src/mnemo/backends/memory.py`: `InMemoryBackend` (dict[MemoryTier, dict[str, MemoryItem]]),
   exported from `mnemo.backends` and `mnemo`
 - `docs/metadata-schema.md`: reserved metadata key conventions per tier (not enforced)
-- 16 new contract tests in `tests/test_in_memory_backend.py` (41 total)
+- 17 new contract tests in `tests/test_in_memory_backend.py` (42 total)
 - README: Phase 1 status + quick example
 
 ### Deliberately NOT built (per scope)

@@ -97,13 +97,16 @@ class TestPolicy:
         with pytest.raises(ValidationError):
             MemoryPolicy(max_working_size=0)
 
+    def test_policy_accepts_kl_threshold(self) -> None:
+        assert MemoryPolicy(kl_threshold=0.5).kl_threshold == 0.5
+
     def test_policy_rejects_unknown_fields(self) -> None:
         with pytest.raises(ValidationError):
-            MemoryPolicy(kl_threshold=0.5)  # type: ignore[call-arg]
+            MemoryPolicy(unknown_field=1)  # type: ignore[call-arg]
 
-    def test_load_policy_not_implemented(self) -> None:
-        with pytest.raises(NotImplementedError):
-            load_policy("policy.yaml")
+    def test_load_policy_missing_file_raises(self) -> None:
+        with pytest.raises(FileNotFoundError):
+            load_policy("policy-does-not-exist.yaml")
 
 
 class TestMemoryBackendABC:

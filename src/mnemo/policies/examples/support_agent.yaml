@@ -1,0 +1,11 @@
+max_working_size: 12
+kl_threshold: 0.25
+l1_cosine_threshold: 0.88
+episodic_decay_mode: power_law
+decay_tau_days: 10
+decay_alpha: 1.2
+tier_weights:
+  working: 0.75
+  episodic: 0.95
+  semantic: 1.0
+  procedural: 0.5

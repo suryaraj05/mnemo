@@ -130,6 +130,19 @@ SQLiteBackend (Phase 4), MemoryPolicy changes.
 - Semantic `recall_facts` decay × confidence ranking
 - `scripts/decay_benchmark.py`, ADR-009, 8 new tests (114 total)
 
-### Notes for next session (Phase 10)
-- KL divergence importance gate for L2 LLM extraction
-- `importance(utterance) = KL(p_new || p_existing)`
+## Phases 10-19 - Complete library (2026-06-11)
+
+### Shipped
+- KL surprise scorer + L2 `MockLLMExtractor` + ingest pipeline
+- `load_policy` YAML + 3 example policies
+- `ProceduralMemory` tier
+- `Mnemo` facade: `remember`, `recall`, `forget`
+- `CompositeBackend`, `RedisBackend`
+- `benchmarks/longmemeval_bench.py`, `docs/voxgraph_integration.md`
+- ADR-010, ~17 new tests (130+ total), version `0.1.0`
+
+### Remaining (post-v0.1)
+- Real LLM provider adapters (OpenAI, Ollama)
+- Async public API
+- Full LongMemEval dataset runner
+- PyPI release workflow

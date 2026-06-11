@@ -1,0 +1,13 @@
+max_working_size: 8
+kl_threshold: 0.2
+l1_cosine_threshold: 0.85
+episodic_decay_mode: exponential
+decay_half_life_days: 14
+tier_weights:
+  working: 0.8
+  episodic: 0.9
+  semantic: 1.0
+  procedural: 0.6
+weight_semantic: 0.4
+weight_keyword: 0.4
+weight_temporal: 0.2

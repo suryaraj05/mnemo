@@ -1,0 +1,1 @@
+"""Example MemoryPolicy YAML files."""
